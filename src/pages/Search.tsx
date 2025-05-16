@@ -138,22 +138,24 @@ const TalentSearch = () => {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500">View:</span>
-                <TabsList className="grid w-24 grid-cols-2">
-                  <TabsTrigger 
-                    value="grid" 
-                    onClick={() => setViewType("grid")}
-                    className={viewType === "grid" ? "data-[state=active]:bg-recruiter-primary data-[state=active]:text-white" : ""}
-                  >
-                    Grid
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="table" 
-                    onClick={() => setViewType("table")}
-                    className={viewType === "table" ? "data-[state=active]:bg-recruiter-primary data-[state=active]:text-white" : ""}
-                  >
-                    Table
-                  </TabsTrigger>
-                </TabsList>
+                <Tabs value={viewType} className="w-24">
+                  <TabsList className="grid grid-cols-2">
+                    <TabsTrigger 
+                      value="grid" 
+                      onClick={() => setViewType("grid")}
+                      className={viewType === "grid" ? "data-[state=active]:bg-recruiter-primary data-[state=active]:text-white" : ""}
+                    >
+                      Grid
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="table" 
+                      onClick={() => setViewType("table")}
+                      className={viewType === "table" ? "data-[state=active]:bg-recruiter-primary data-[state=active]:text-white" : ""}
+                    >
+                      Table
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
             </div>
 

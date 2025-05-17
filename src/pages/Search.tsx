@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import { ArrowRight, Search, Loader2 } from "lucide-react";
-import { mockCandidates } from "@/lib/mock-data";
+import { mockCandidates as mockCandidatesOriginal } from "@/lib/mock-data";
 import { toast } from "@/hooks/use-toast";
 
 interface Contact {
@@ -84,8 +84,25 @@ const TalentSearch = () => {
           variant: "destructive"
         });
         
-        // Fallback to mock data in case of API failure
-        const fallbackResults = [...mockCandidates];
+        // Convert mock data to match our Candidate interface
+        const fallbackResults: Candidate[] = mockCandidatesOriginal.map(mock => ({
+          id: parseInt(mock.id),
+          name: mock.name,
+          skills: mock.skills,
+          experience: mock.experience.toString(),
+          education: Array.isArray(mock.education) 
+            ? mock.education.map(ed => `${ed.degree}, ${ed.institution}`).join('; ')
+            : mock.education,
+          contact: {
+            email: mock.email,
+            phone: mock.phone
+          },
+          summary: mock.workHistory?.[0]?.description?.join(' ') || '',
+          similarity_score: (mock.matchScore || 0) / 100,
+          matchScore: mock.matchScore,
+          location: mock.location
+        }));
+        
         fallbackResults.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
         setSearchResults(fallbackResults);
       } finally {

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,15 +17,60 @@ interface CandidateResponse {
     phone: string;
   };
   summary: string;
-  location?: string; // Add this as it's used in the table but may not be in API response
+  location?: string;
 }
 
 const UploadPage = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [parsedCandidates, setParsedCandidates] = useState<any[]>(mockCandidates.slice(0, 3));
+  const [parsedCandidates, setParsedCandidates] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
+
+  // Fetch all parsed resumes when component mounts
+  useEffect(() => {
+    fetchParsedResumes();
+  }, []);
+
+  // Function to fetch all parsed resumes from API
+  const fetchParsedResumes = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/resumes/', {
+        method: 'GET',
+        credentials: 'include', // Include cookies for authentication
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Transform the data to match the expected format
+      const formattedCandidates = data.map((candidate: CandidateResponse) => ({
+        id: `candidate-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: candidate.name,
+        skills: candidate.skills,
+        experience: candidate.experience,
+        location: candidate.location || "Not specified",
+        education: candidate.education,
+        contact: candidate.contact,
+        summary: candidate.summary
+      }));
+      
+      setParsedCandidates(formattedCandidates);
+      toast.success("Successfully loaded parsed resumes");
+    } catch (error) {
+      console.error("Failed to fetch parsed resumes:", error);
+      toast.error("Failed to load parsed resumes. Using sample data instead.");
+      // Fallback to mock data
+      setParsedCandidates(mockCandidates.slice(0, 3));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -75,49 +120,37 @@ const UploadPage = () => {
       const formData = new FormData();
       formData.append('file', file);
       
-      // Create request options
-      const options = {
+      // API call with real endpoint
+      const response = await fetch('http://localhost:8000/api/v1/upload-resume/', {
         method: 'POST',
+        credentials: 'include', // Include cookies for authentication
         body: formData,
-      };
-      
-      // For demo purposes, we'll use a simulated API call
-      // In production, replace this with your actual API endpoint
-      // const response = await fetch('http://localhost:8000/api/v1/upload-resume/', options);
-      
-      // Simulate API call with progress
-      await new Promise<void>((resolve) => {
-        let progress = 0;
-        const interval = setInterval(() => {
-          progress += 10;
-          setUploadProgress(prev => ({...prev, [file.name]: progress}));
-          if (progress >= 100) {
-            clearInterval(interval);
-            resolve();
-          }
-        }, 200);
       });
-
-      // Simulate successful response
-      // In production, parse the actual API response
-      // const data = await response.json();
       
-      // Example response based on the provided JSON structure
-      const mockResponse: CandidateResponse = {
-        name: file.name.replace('.pdf', '').replace('.docx', '').replace(/_/g, ' '),
-        skills: ["React", "TypeScript", "Node.js", "TailwindCSS"].slice(0, Math.floor(Math.random() * 4) + 1),
-        experience: `${Math.floor(Math.random() * 10) + 1} years`,
-        education: "Computer Science Degree",
-        contact: {
-          email: `example${Math.floor(Math.random() * 100)}@example.com`,
-          phone: `+1 555-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`
-        },
-        summary: "Experienced professional with expertise in various technologies.",
-        location: ["New York", "San Francisco", "Bangalore", "London"][Math.floor(Math.random() * 4)]
-      };
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          const currentProgress = prev[file.name] || 0;
+          if (currentProgress < 90) {
+            return {...prev, [file.name]: currentProgress + 10};
+          }
+          return prev;
+        });
+      }, 200);
+      
+      if (!response.ok) {
+        clearInterval(progressInterval);
+        throw new Error(`Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Complete the progress
+      setUploadProgress(prev => ({...prev, [file.name]: 100}));
+      clearInterval(progressInterval);
       
       toast.success(`Successfully parsed: ${file.name}`);
-      return mockResponse;
+      return data;
     } catch (error) {
       console.error(`Error uploading ${file.name}:`, error);
       toast.error(`Failed to upload: ${file.name}`);
@@ -131,7 +164,7 @@ const UploadPage = () => {
     
     const results = [];
     
-    // Process files one by one (you could also use Promise.all for parallel processing)
+    // Process files one by one
     for (const file of filesToUpload) {
       const result = await uploadSingleFile(file);
       if (result) {
@@ -149,12 +182,15 @@ const UploadPage = () => {
     }
     
     setIsUploading(false);
-    setParsedCandidates(prev => [...results, ...prev]);
-    setUploadProgress({});
     
     if (results.length > 0) {
+      setParsedCandidates(prev => [...results, ...prev]);
       toast.success(`${results.length} resume${results.length > 1 ? 's' : ''} successfully parsed!`);
+      // Refresh the list of parsed resumes
+      fetchParsedResumes();
     }
+    
+    setUploadProgress({});
   };
 
   const loadSampleResumes = () => {
@@ -252,14 +288,16 @@ const UploadPage = () => {
               </div>
             )}
 
-            {isUploading && Object.keys(uploadProgress).length === 0 && (
+            {(isUploading || isLoading) && Object.keys(uploadProgress).length === 0 && (
               <div className="mt-8 text-center">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                <p className="mt-2 text-gray-600">Processing resumes...</p>
+                <p className="mt-2 text-gray-600">
+                  {isUploading ? "Processing resumes..." : "Loading parsed resumes..."}
+                </p>
               </div>
             )}
 
-            {parsedCandidates.length > 0 && !isUploading && (
+            {parsedCandidates.length > 0 && !isUploading && !isLoading && (
               <div className="mt-8">
                 <h3 className="text-lg font-medium mb-4">Parsed Candidates</h3>
                 <div className="rounded-md border overflow-hidden">
@@ -312,6 +350,12 @@ const UploadPage = () => {
                     <a href="/search">Continue to Search</a>
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {parsedCandidates.length === 0 && !isLoading && !isUploading && (
+              <div className="mt-8 text-center py-8">
+                <p className="text-gray-500">No resumes found. Upload resumes to get started.</p>
               </div>
             )}
           </CardContent>

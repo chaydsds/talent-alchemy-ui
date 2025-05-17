@@ -88,12 +88,15 @@ const Home = () => {
           </div>
           
           <div className="max-w-4xl mx-auto bg-white p-4 rounded-xl shadow-md">
-            <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-              <div className="text-gray-500">
-                <p className="text-lg font-medium">Demo Video</p>
-                <p className="text-sm">(Loom embed would go here)</p>
-              </div>
-            </div>
+           <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+  <iframe
+    src="https://www.loom.com/embed/addcef296a954ae8ad63b083c370cdef?sid=667078ad-da33-43e5-8fd4-6fa6a18e394c"
+    frameBorder="0"
+    allowFullScreen
+    className="w-full h-full"
+  ></iframe>
+</div>
+
           </div>
         </div>
       </section>

@@ -5,8 +5,32 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { ArrowRight, Search } from "lucide-react";
-import { mockCandidates, Candidate } from "@/lib/mock-data";
+import { ArrowRight, Search, Loader2 } from "lucide-react";
+import { mockCandidates } from "@/lib/mock-data";
+import { toast } from "@/hooks/use-toast";
+
+interface Contact {
+  email: string;
+  phone: string;
+}
+
+interface Candidate {
+  id: number;
+  name: string;
+  skills: string[];
+  experience: string;
+  education: string;
+  contact: Contact;
+  summary: string;
+  similarity_score: number;
+  matchScore?: number; // For backward compatibility
+  location?: string; // For backward compatibility
+}
+
+interface SearchResponse {
+  matches: Candidate[];
+  analysis: string;
+}
 
 const TalentSearch = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -14,43 +38,59 @@ const TalentSearch = () => {
   const [searchResults, setSearchResults] = useState<Candidate[]>([]);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [viewType, setViewType] = useState<"grid" | "table">("grid");
+  const [analysis, setAnalysis] = useState<string>("");
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       setIsSearching(true);
       
-      // Simulate search delay
-      setTimeout(() => {
+      try {
+        const response = await fetch('http://localhost:8000/api/search/search/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add cookie headers if needed - in production, cookies would typically be sent automatically
+          },
+          body: JSON.stringify({
+            query: searchQuery,
+            location: null,
+            experience_years: null
+          }),
+          credentials: 'include' // Include cookies in the request
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const data: SearchResponse = await response.json();
+        
+        // Process and set the search results
+        const candidates = data.matches.map(candidate => ({
+          ...candidate,
+          // For backward compatibility with existing UI
+          matchScore: Math.round(candidate.similarity_score * 100)
+        }));
+        
+        setSearchResults(candidates);
+        setAnalysis(data.analysis);
+        
+      } catch (error) {
+        console.error("Search API error:", error);
+        toast({
+          title: "Search failed",
+          description: "Could not complete the search. Using mock data instead.",
+          variant: "destructive"
+        });
+        
+        // Fallback to mock data in case of API failure
+        const fallbackResults = [...mockCandidates];
+        fallbackResults.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+        setSearchResults(fallbackResults);
+      } finally {
         setIsSearching(false);
-        
-        // Mock search results - in a real app, this would use semantic search
-        let filteredResults = [...mockCandidates];
-        
-        // Simple keyword matching for demo purposes
-        const keywords = searchQuery.toLowerCase().split(" ");
-        
-        if (keywords.includes("react")) {
-          filteredResults = filteredResults.filter(c => 
-            c.skills.some(s => s.toLowerCase().includes("react"))
-          );
-        }
-        
-        if (keywords.includes("bangalore")) {
-          filteredResults = filteredResults.filter(c => 
-            c.location.toLowerCase().includes("bangalore")
-          );
-        }
-        
-        if (keywords.includes("5+")) {
-          filteredResults = filteredResults.filter(c => c.experience >= 5);
-        }
-        
-        // Sort by match score
-        filteredResults.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
-        
-        setSearchResults(filteredResults);
-      }, 1000);
+      }
     }
   };
 
@@ -69,11 +109,22 @@ const TalentSearch = () => {
           // Check if candidate matches the filter criteria
           if (candidate.skills.includes(filter)) return true;
           if (candidate.location === filter) return true;
-          if (filter === "5+ years" && candidate.experience >= 5) return true;
+          if (filter === "5+ years" && candidate.experience.includes("5") || 
+              parseInt(candidate.experience) >= 5) return true;
           return false;
         });
       })
     : searchResults;
+
+  // Extract all unique skills from search results for filters
+  const availableSkills = searchResults.length > 0 
+    ? Array.from(new Set(searchResults.flatMap(candidate => candidate.skills))).slice(0, 8)
+    : ["React", "Node.js", "TypeScript", "Python", "Django"];
+
+  // Extract locations for filters
+  const locations = searchResults.length > 0
+    ? Array.from(new Set(searchResults.filter(c => c.location).map(c => c.location as string)))
+    : ["Bangalore", "Mumbai"];
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -100,7 +151,7 @@ const TalentSearch = () => {
               <Button type="submit" disabled={isSearching} size="lg">
                 {isSearching ? (
                   <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></div>
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Searching...</span>
                   </div>
                 ) : (
@@ -122,7 +173,7 @@ const TalentSearch = () => {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium">Filters:</span>
-                {["React", "Node.js", "TypeScript", "Bangalore", "Mumbai", "5+ years"].map((filter) => (
+                {[...availableSkills, ...locations, "5+ years"].map((filter) => (
                   <button
                     key={filter}
                     onClick={() => toggleFilter(filter)}
@@ -159,6 +210,17 @@ const TalentSearch = () => {
               </div>
             </div>
 
+            {analysis && (
+              <Card className="mb-6 bg-slate-50">
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-lg mb-2">Analysis</h3>
+                  <div className="text-sm text-slate-700 whitespace-pre-line">
+                    {analysis}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Tabs defaultValue={viewType} className="w-full" value={viewType}>
               <TabsContent value="grid" className="mt-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -169,10 +231,10 @@ const TalentSearch = () => {
                           <div className="flex items-start justify-between">
                             <div>
                               <h3 className="text-lg font-semibold">{candidate.name}</h3>
-                              <p className="text-gray-600">{candidate.location}</p>
+                              <p className="text-gray-600">{candidate.location || "Remote"}</p>
                             </div>
                             <div className="bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-sm font-medium">
-                              {candidate.matchScore}%
+                              {candidate.matchScore || Math.round(candidate.similarity_score * 100)}%
                             </div>
                           </div>
                           
@@ -192,7 +254,7 @@ const TalentSearch = () => {
                               ))}
                             </div>
                             <p className="text-sm text-gray-600">
-                              <span className="font-medium">Experience:</span> {candidate.experience} years
+                              <span className="font-medium">Experience:</span> {candidate.experience}
                             </p>
                           </div>
                         </div>
@@ -259,14 +321,14 @@ const TalentSearch = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {candidate.location}
+                            {candidate.location || "Remote"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {candidate.experience}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="bg-blue-50 text-blue-700 rounded-full px-3 py-1 text-xs font-medium inline-block">
-                              {candidate.matchScore}%
+                              {candidate.matchScore || Math.round(candidate.similarity_score * 100)}%
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">

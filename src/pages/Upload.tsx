@@ -5,12 +5,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { mockCandidates } from "@/lib/mock-data";
+import { Upload } from "lucide-react";
 
-const Upload = () => {
+interface CandidateResponse {
+  name: string;
+  skills: string[];
+  experience: string;
+  education: string;
+  contact: {
+    email: string;
+    phone: string;
+  };
+  summary: string;
+  location?: string; // Add this as it's used in the table but may not be in API response
+}
+
+const UploadPage = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [parsedCandidates, setParsedCandidates] = useState(mockCandidates.slice(0, 3));
+  const [parsedCandidates, setParsedCandidates] = useState<any[]>(mockCandidates.slice(0, 3));
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -52,16 +67,94 @@ const Upload = () => {
     }
   };
 
-  const handleFileUpload = (filesToUpload: File[]) => {
+  const uploadSingleFile = async (file: File) => {
+    try {
+      // Update progress for this file
+      setUploadProgress(prev => ({...prev, [file.name]: 0}));
+
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      // Create request options
+      const options = {
+        method: 'POST',
+        body: formData,
+      };
+      
+      // For demo purposes, we'll use a simulated API call
+      // In production, replace this with your actual API endpoint
+      // const response = await fetch('http://localhost:8000/api/v1/upload-resume/', options);
+      
+      // Simulate API call with progress
+      await new Promise<void>((resolve) => {
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 10;
+          setUploadProgress(prev => ({...prev, [file.name]: progress}));
+          if (progress >= 100) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, 200);
+      });
+
+      // Simulate successful response
+      // In production, parse the actual API response
+      // const data = await response.json();
+      
+      // Example response based on the provided JSON structure
+      const mockResponse: CandidateResponse = {
+        name: file.name.replace('.pdf', '').replace('.docx', '').replace(/_/g, ' '),
+        skills: ["React", "TypeScript", "Node.js", "TailwindCSS"].slice(0, Math.floor(Math.random() * 4) + 1),
+        experience: `${Math.floor(Math.random() * 10) + 1} years`,
+        education: "Computer Science Degree",
+        contact: {
+          email: `example${Math.floor(Math.random() * 100)}@example.com`,
+          phone: `+1 555-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`
+        },
+        summary: "Experienced professional with expertise in various technologies.",
+        location: ["New York", "San Francisco", "Bangalore", "London"][Math.floor(Math.random() * 4)]
+      };
+      
+      toast.success(`Successfully parsed: ${file.name}`);
+      return mockResponse;
+    } catch (error) {
+      console.error(`Error uploading ${file.name}:`, error);
+      toast.error(`Failed to upload: ${file.name}`);
+      return null;
+    }
+  };
+  
+  const handleFileUpload = async (filesToUpload: File[]) => {
     setFiles(prevFiles => [...prevFiles, ...filesToUpload]);
     setIsUploading(true);
     
-    // Simulate parsing delay
-    setTimeout(() => {
-      setIsUploading(false);
-      setParsedCandidates(mockCandidates);
-      toast.success(`${filesToUpload.length} resume${filesToUpload.length > 1 ? 's' : ''} successfully parsed!`);
-    }, 2000);
+    const results = [];
+    
+    // Process files one by one (you could also use Promise.all for parallel processing)
+    for (const file of filesToUpload) {
+      const result = await uploadSingleFile(file);
+      if (result) {
+        results.push({
+          id: `candidate-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: result.name,
+          skills: result.skills,
+          experience: result.experience,
+          location: result.location || "Not specified", 
+          education: result.education,
+          contact: result.contact,
+          summary: result.summary
+        });
+      }
+    }
+    
+    setIsUploading(false);
+    setParsedCandidates(prev => [...results, ...prev]);
+    setUploadProgress({});
+    
+    if (results.length > 0) {
+      toast.success(`${results.length} resume${results.length > 1 ? 's' : ''} successfully parsed!`);
+    }
   };
 
   const loadSampleResumes = () => {
@@ -102,9 +195,7 @@ const Upload = () => {
               onDrop={handleDrop}
             >
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-50">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-gray-500">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-                </svg>
+                <Upload className="h-8 w-8 text-gray-500" />
               </div>
               <h3 className="text-lg font-medium">
                 Drag and drop your resume files
@@ -138,7 +229,30 @@ const Upload = () => {
               </div>
             </div>
 
-            {isUploading && (
+            {/* Show upload progress if any files are being processed */}
+            {Object.keys(uploadProgress).length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-medium mb-3">Upload Progress</h3>
+                <div className="space-y-3">
+                  {Object.entries(uploadProgress).map(([fileName, progress]) => (
+                    <div key={fileName} className="w-full">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">{fileName}</span>
+                        <span className="text-sm font-medium">{progress}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-recruiter-primary h-2 rounded-full" 
+                          style={{ width: `${progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {isUploading && Object.keys(uploadProgress).length === 0 && (
               <div className="mt-8 text-center">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
                 <p className="mt-2 text-gray-600">Processing resumes...</p>
@@ -165,7 +279,7 @@ const Upload = () => {
                           <TableCell className="font-medium">{candidate.name}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {candidate.skills.slice(0, 3).map((skill) => (
+                              {candidate.skills.slice(0, 3).map((skill: string) => (
                                 <span 
                                   key={skill} 
                                   className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
@@ -180,7 +294,7 @@ const Upload = () => {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>{candidate.experience} years</TableCell>
+                          <TableCell>{candidate.experience}</TableCell>
                           <TableCell>{candidate.location}</TableCell>
                           <TableCell>
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -207,4 +321,4 @@ const Upload = () => {
   );
 };
 
-export default Upload;
+export default UploadPage;

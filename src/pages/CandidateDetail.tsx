@@ -6,8 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { mockCandidates, getScreeningQuestions, getOutreachTemplate, Candidate } from "@/lib/mock-data";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Send, Calendar, MessageSquare, Mail, MailOpen } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const CandidateDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +26,9 @@ const CandidateDetail = () => {
   const [outreachEmail, setOutreachEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [emailType, setEmailType] = useState<"initial" | "interview" | "congratulations" | "regret">("initial");
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
 
   useEffect(() => {
     // Simulate API call to get candidate details
@@ -35,9 +48,72 @@ const CandidateDetail = () => {
     // Simulate sending email
     setTimeout(() => {
       setIsSending(false);
-      toast.success("Outreach email sent successfully!");
+      toast.success(`${emailType === "initial" ? "Outreach" : emailType.charAt(0).toUpperCase() + emailType.slice(1)} email sent successfully!`);
     }, 1500);
   };
+
+  const getEmailTemplate = (type: string) => {
+    if (!candidate) return "";
+    
+    switch (type) {
+      case "interview":
+        return `Dear ${candidate.name},
+
+We were impressed by your experience and skills, and we would like to invite you for an interview on ${scheduledDate} at ${scheduledTime}.
+
+Please let us know if this time works for you. If not, please suggest alternative dates and times.
+
+Looking forward to speaking with you!
+
+Best regards,
+AI Recruiter
+PeopleGPT`;
+      
+      case "congratulations":
+        return `Dear ${candidate.name},
+
+Congratulations! We are pleased to inform you that you have successfully passed our interview process.
+
+We would like to move forward with the next steps. Our team will be in touch shortly to discuss the details.
+
+Best regards,
+AI Recruiter
+PeopleGPT`;
+      
+      case "regret":
+        return `Dear ${candidate.name},
+
+Thank you for your interest in our company and for taking the time to interview with us.
+
+After careful consideration, we have decided to proceed with other candidates whose qualifications more closely match our current needs.
+
+We appreciate your interest in our company and wish you the best in your job search.
+
+Best regards,
+AI Recruiter
+PeopleGPT`;
+      
+      default:
+        return getOutreachTemplate(candidate);
+    }
+  };
+
+  const switchEmailType = (type: "initial" | "interview" | "congratulations" | "regret") => {
+    setEmailType(type);
+    setOutreachEmail(getEmailTemplate(type));
+  };
+
+  const updateInterviewTemplate = () => {
+    if (emailType === "interview") {
+      setOutreachEmail(getEmailTemplate("interview"));
+    }
+  };
+
+  useEffect(() => {
+    if (emailType === "interview") {
+      updateInterviewTemplate();
+    }
+  }, [scheduledDate, scheduledTime]);
 
   if (isLoading) {
     return (
@@ -253,13 +329,97 @@ const CandidateDetail = () => {
           <TabsContent value="outreach" className="mt-0">
             <Card>
               <CardHeader>
-                <CardTitle>AI-Generated Outreach Email</CardTitle>
+                <CardTitle>AI-Generated Emails</CardTitle>
                 <CardDescription>
-                  Personalized email template for {candidate.name} based on their profile
+                  Choose the type of email you want to send to {candidate.name}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="mb-6">
+                  <div className="flex flex-wrap gap-3 mb-6">
+                    <Button 
+                      variant={emailType === "initial" ? "default" : "outline"}
+                      onClick={() => switchEmailType("initial")}
+                      className="flex gap-2 items-center"
+                    >
+                      <Mail className="h-4 w-4" />
+                      Initial Outreach
+                    </Button>
+                    
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant={emailType === "interview" ? "default" : "outline"}
+                          className="flex gap-2 items-center"
+                        >
+                          <Calendar className="h-4 w-4" />
+                          Interview Invitation
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Schedule Interview</DialogTitle>
+                          <DialogDescription>
+                            Set the date and time for the interview
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <label htmlFor="interview-date" className="text-right">
+                              Date
+                            </label>
+                            <Input
+                              id="interview-date"
+                              type="date"
+                              value={scheduledDate}
+                              onChange={(e) => setScheduledDate(e.target.value)}
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <label htmlFor="interview-time" className="text-right">
+                              Time
+                            </label>
+                            <Input
+                              id="interview-time"
+                              type="time"
+                              value={scheduledTime}
+                              onChange={(e) => setScheduledTime(e.target.value)}
+                              className="col-span-3"
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button 
+                            onClick={() => {
+                              switchEmailType("interview");
+                            }}
+                          >
+                            Create Email
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    
+                    <Button 
+                      variant={emailType === "congratulations" ? "default" : "outline"}
+                      onClick={() => switchEmailType("congratulations")}
+                      className="flex gap-2 items-center"
+                    >
+                      <MailOpen className="h-4 w-4" />
+                      Congratulations
+                    </Button>
+                    
+                    <Button 
+                      variant={emailType === "regret" ? "default" : "outline"}
+                      onClick={() => switchEmailType("regret")}
+                      className="flex gap-2 items-center"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      Regret
+                    </Button>
+                  </div>
+                  
                   <div className="p-6 border rounded-lg bg-white">
                     <div className="mb-4 space-y-2">
                       <div>
@@ -268,7 +428,12 @@ const CandidateDetail = () => {
                       </div>
                       <div>
                         <span className="text-sm text-gray-500">Subject:</span>
-                        <span className="ml-2 font-medium">Exciting opportunity for {candidate.skills[0]} developer</span>
+                        <span className="ml-2 font-medium">
+                          {emailType === "initial" && `Exciting opportunity for ${candidate.skills[0]} developer`}
+                          {emailType === "interview" && `Interview Invitation: ${candidate.skills[0]} Position`}
+                          {emailType === "congratulations" && `Congratulations on Your Interview Success`}
+                          {emailType === "regret" && `Regarding Your Recent Application`}
+                        </span>
                       </div>
                     </div>
                     
@@ -289,6 +454,7 @@ const CandidateDetail = () => {
                   <Button 
                     onClick={handleSendEmail}
                     disabled={isSending}
+                    className="flex items-center gap-2"
                   >
                     {isSending ? (
                       <div className="flex items-center gap-2">
@@ -296,7 +462,10 @@ const CandidateDetail = () => {
                         <span>Sending...</span>
                       </div>
                     ) : (
-                      <span>Send Email</span>
+                      <>
+                        <Send className="h-4 w-4" />
+                        <span>Send Email</span>
+                      </>
                     )}
                   </Button>
                 </div>

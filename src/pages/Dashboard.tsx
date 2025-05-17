@@ -10,6 +10,37 @@ import { skillDistribution, experienceDistribution, locationDistribution, skillG
 const COLORS = ['#4361ee', '#3a0ca3', '#7209b7', '#f72585', '#4cc9f0', '#4895ef', '#560bad', '#b5179e'];
 
 const Dashboard = () => {
+  // Data for the LineChart
+  const skillDemandData = [
+    { name: "React", data: [
+      { month: "Jan", value: 30 },
+      { month: "Feb", value: 35 },
+      { month: "Mar", value: 45 },
+      { month: "Apr", value: 60 },
+      { month: "May", value: 70 },
+      { month: "Jun", value: 65 },
+    ]},
+    { name: "Angular", data: [
+      { month: "Jan", value: 50 },
+      { month: "Feb", value: 45 },
+      { month: "Mar", value: 40 },
+      { month: "Apr", value: 30 },
+      { month: "May", value: 35 },
+      { month: "Jun", value: 40 },
+    ]},
+    { name: "TypeScript", data: [
+      { month: "Jan", value: 20 },
+      { month: "Feb", value: 30 },
+      { month: "Mar", value: 35 },
+      { month: "Apr", value: 45 },
+      { month: "May", value: 55 },
+      { month: "Jun", value: 60 },
+    ]},
+  ];
+
+  // Months array for X-axis
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-7xl mx-auto">
@@ -162,7 +193,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
           
-          {/* Skill Demand Trends (Mock Data) */}
+          {/* Skill Demand Trends (Fixed version) */}
           <Card className="col-span-1">
             <CardHeader>
               <CardTitle>Skill Demand Trends</CardTitle>
@@ -186,20 +217,12 @@ const Dashboard = () => {
                       dataKey="month" 
                       type="category"
                       allowDuplicatedCategory={false}
-                      categories={["Jan", "Feb", "Mar", "Apr", "May", "Jun"]}
                     />
                     <YAxis />
                     <Tooltip />
                     <Legend />
                     <Line
-                      data={[
-                        { month: "Jan", value: 30 },
-                        { month: "Feb", value: 35 },
-                        { month: "Mar", value: 45 },
-                        { month: "Apr", value: 60 },
-                        { month: "May", value: 70 },
-                        { month: "Jun", value: 65 },
-                      ]}
+                      data={skillDemandData[0].data}
                       type="monotone"
                       dataKey="value"
                       name="React"
@@ -207,14 +230,7 @@ const Dashboard = () => {
                       activeDot={{ r: 8 }}
                     />
                     <Line
-                      data={[
-                        { month: "Jan", value: 50 },
-                        { month: "Feb", value: 45 },
-                        { month: "Mar", value: 40 },
-                        { month: "Apr", value: 30 },
-                        { month: "May", value: 35 },
-                        { month: "Jun", value: 40 },
-                      ]}
+                      data={skillDemandData[1].data}
                       type="monotone"
                       dataKey="value"
                       name="Angular"
@@ -222,14 +238,7 @@ const Dashboard = () => {
                       activeDot={{ r: 8 }}
                     />
                     <Line
-                      data={[
-                        { month: "Jan", value: 20 },
-                        { month: "Feb", value: 30 },
-                        { month: "Mar", value: 35 },
-                        { month: "Apr", value: 45 },
-                        { month: "May", value: 55 },
-                        { month: "Jun", value: 60 },
-                      ]}
+                      data={skillDemandData[2].data}
                       type="monotone"
                       dataKey="value"
                       name="TypeScript"

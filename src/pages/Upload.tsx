@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { mockCandidates } from "@/lib/mock-data";
 import { Upload } from "lucide-react";
+import { getApiUrl, API_CONFIG } from "@/config/api";
 
 interface CandidateResponse {
   name: string;
@@ -37,7 +37,7 @@ const UploadPage = () => {
   const fetchParsedResumes = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/v1/resumes/', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.RESUMES), {
         method: 'GET',
         credentials: 'include', // Include cookies for authentication
       });
@@ -121,7 +121,7 @@ const UploadPage = () => {
       formData.append('file', file);
       
       // API call with real endpoint
-      const response = await fetch('http://localhost:8000/api/v1/upload-resume/', {
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.UPLOAD_RESUME), {
         method: 'POST',
         credentials: 'include', // Include cookies for authentication
         body: formData,

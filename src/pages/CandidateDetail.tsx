@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { mockCandidates, getScreeningQuestions, getOutreachTemplate, Candidate } from "@/lib/mock-data";
+import { getScreeningQuestions, getOutreachTemplate } from "@/lib/mock-data";
 import { ArrowLeft, Send, Calendar, MessageSquare, Mail, MailOpen } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -18,6 +17,52 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { getApiUrl, API_CONFIG } from "@/config/api";
+
+interface Contact {
+  email: string;
+  phone: string;
+  location: string;
+}
+
+interface Education {
+  degree: string;
+  year: string | null;
+  institution: string | null;
+}
+
+interface Certification {
+  name: string;
+  issuing_organization: string | null;
+  year: string | null;
+}
+
+interface EducationInfo {
+  details: Education[];
+  certifications: Certification[];
+}
+
+interface WorkExperience {
+  summary: string;
+  details: any[];
+}
+
+interface BasicInfo {
+  id: number;
+  first_name: string;
+  full_name: string;
+  experience_years: string;
+  summary: string;
+}
+
+interface Candidate {
+  basic_info: BasicInfo;
+  contact_info: Contact;
+  skills: string[];
+  education: EducationInfo;
+  work_experience: WorkExperience;
+  created_at: string;
+}
 
 const CandidateDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,16 +76,45 @@ const CandidateDetail = () => {
   const [scheduledTime, setScheduledTime] = useState("");
 
   useEffect(() => {
-    // Simulate API call to get candidate details
-    setTimeout(() => {
-      const foundCandidate = mockCandidates.find(c => c.id === id);
-      if (foundCandidate) {
-        setCandidate(foundCandidate);
-        setScreeningQuestions(getScreeningQuestions(foundCandidate.skills));
-        setOutreachEmail(getOutreachTemplate(foundCandidate));
+    const fetchCandidateDetails = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(getApiUrl(`search/resume/${id}/`), {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setCandidate(data);
+        setScreeningQuestions(getScreeningQuestions(data.skills));
+        
+        // Convert API response to match the expected format for outreach template
+        const outreachFormat = {
+          id: data.basic_info.id,
+          name: data.basic_info.full_name,
+          skills: data.skills,
+          experience: data.basic_info.experience_years,
+          education: data.education.details.map(edu => edu.degree).join(", "),
+          contact: data.contact_info,
+          summary: data.basic_info.summary,
+          similarity_score: 0.8 // Default value since it's not in the API response
+        };
+        setOutreachEmail(getOutreachTemplate(outreachFormat));
+      } catch (error) {
+        console.error("Failed to fetch candidate details:", error);
+        toast.error("Failed to load candidate details");
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    }, 800);
+    };
+
+    if (id) {
+      fetchCandidateDetails();
+    }
   }, [id]);
 
   const handleSendEmail = () => {
@@ -57,7 +131,7 @@ const CandidateDetail = () => {
     
     switch (type) {
       case "interview":
-        return `Dear ${candidate.name},
+        return `Dear ${candidate.basic_info.full_name},
 
 We were impressed by your experience and skills, and we would like to invite you for an interview on ${scheduledDate} at ${scheduledTime}.
 
@@ -70,7 +144,7 @@ AI Recruiter
 PeopleGPT`;
       
       case "congratulations":
-        return `Dear ${candidate.name},
+        return `Dear ${candidate.basic_info.full_name},
 
 Congratulations! We are pleased to inform you that you have successfully passed our interview process.
 
@@ -81,7 +155,7 @@ AI Recruiter
 PeopleGPT`;
       
       case "regret":
-        return `Dear ${candidate.name},
+        return `Dear ${candidate.basic_info.full_name},
 
 Thank you for your interest in our company and for taking the time to interview with us.
 
@@ -131,7 +205,7 @@ PeopleGPT`;
         <div className="max-w-5xl mx-auto">
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold mb-4">Candidate Not Found</h2>
-            <p className="text-gray-600 mb-6">The candidate you are looking for does not exist.</p>
+            <p className="text-gray-600 mb-6">The candidate you are looking for does not exist or has been removed.</p>
             <Button asChild>
               <Link to="/search">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Search
@@ -156,12 +230,12 @@ PeopleGPT`;
           
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold">{candidate.name}</h1>
-              <p className="text-gray-600">{candidate.location} • {candidate.experience} years experience</p>
+              <h1 className="text-3xl font-bold">{candidate.basic_info.full_name}</h1>
+              <p className="text-gray-600">{candidate.contact_info.location} • {candidate.basic_info.experience_years}</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="bg-blue-50 text-blue-700 rounded-full px-4 py-1.5 text-sm font-medium">
-                Match Score: {candidate.matchScore}%
+                Match Score: 80%
               </div>
             </div>
           </div>
@@ -190,15 +264,15 @@ PeopleGPT`;
                   <div className="space-y-4">
                     <div>
                       <p className="text-sm text-gray-500">Email</p>
-                      <p className="font-medium">{candidate.email}</p>
+                      <p className="font-medium">{candidate.contact_info.email}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Phone</p>
-                      <p className="font-medium">{candidate.phone}</p>
+                      <p className="font-medium">{candidate.contact_info.phone}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Location</p>
-                      <p className="font-medium">{candidate.location}</p>
+                      <p className="font-medium">{candidate.contact_info.location}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -225,22 +299,10 @@ PeopleGPT`;
                 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Work Experience</CardTitle>
+                    <CardTitle>Summary</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-6">
-                      {candidate.workHistory.map((work, index) => (
-                        <div key={index} className="border-l-2 border-gray-200 pl-4 pb-1">
-                          <h3 className="font-semibold text-lg">{work.title}</h3>
-                          <p className="text-gray-600">{work.company} • {work.duration}</p>
-                          <ul className="mt-2 space-y-1">
-                            {work.description.map((desc, i) => (
-                              <li key={i} className="text-gray-700">{desc}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
+                    <p className="text-gray-700 whitespace-pre-line">{candidate.basic_info.summary}</p>
                   </CardContent>
                 </Card>
                 
@@ -250,29 +312,34 @@ PeopleGPT`;
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {candidate.education.map((edu, index) => (
+                      {candidate.education.details.map((edu, index) => (
                         <div key={index} className="border-l-2 border-gray-200 pl-4">
                           <h3 className="font-semibold">{edu.degree}</h3>
-                          <p className="text-gray-600">{edu.institution} • {edu.year}</p>
+                          {edu.institution && (
+                            <p className="text-gray-600">{edu.institution}</p>
+                          )}
+                          {edu.year && (
+                            <p className="text-gray-600">{edu.year}</p>
+                          )}
                         </div>
                       ))}
                     </div>
                   </CardContent>
                 </Card>
-                
-                {candidate.certifications.length > 0 && (
+
+                {candidate.education.certifications.length > 0 && (
                   <Card>
                     <CardHeader>
                       <CardTitle>Certifications</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="flex flex-wrap gap-2">
-                        {candidate.certifications.map((cert, index) => (
+                        {candidate.education.certifications.map((cert, index) => (
                           <span 
                             key={index} 
                             className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-purple-100 text-purple-800"
                           >
-                            {cert}
+                            {cert.name}
                           </span>
                         ))}
                       </div>
@@ -288,7 +355,7 @@ PeopleGPT`;
               <CardHeader>
                 <CardTitle>AI-Generated Screening Questions</CardTitle>
                 <CardDescription>
-                  These questions are generated based on {candidate.name}'s skills and experience
+                  These questions are generated based on {candidate.basic_info.full_name}'s skills and experience
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -331,7 +398,7 @@ PeopleGPT`;
               <CardHeader>
                 <CardTitle>AI-Generated Emails</CardTitle>
                 <CardDescription>
-                  Choose the type of email you want to send to {candidate.name}
+                  Choose the type of email you want to send to {candidate.basic_info.full_name}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -424,7 +491,7 @@ PeopleGPT`;
                     <div className="mb-4 space-y-2">
                       <div>
                         <span className="text-sm text-gray-500">To:</span>
-                        <span className="ml-2 font-medium">{candidate.email}</span>
+                        <span className="ml-2 font-medium">{candidate.contact_info.email}</span>
                       </div>
                       <div>
                         <span className="text-sm text-gray-500">Subject:</span>

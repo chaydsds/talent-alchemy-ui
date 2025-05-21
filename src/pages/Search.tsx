@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Search, Loader2 } from "lucide-react";
 import { mockCandidates as mockCandidatesOriginal } from "@/lib/mock-data";
 import { toast } from "@/hooks/use-toast";
+import { getApiUrl, API_CONFIG } from "@/config/api";
 
 interface Contact {
   email: string;
@@ -28,8 +28,18 @@ interface Candidate {
 }
 
 interface SearchResponse {
-  matches: Candidate[];
-  analysis: string;
+  id: number;
+  name: string;
+  skills: string[];
+  experience: string;
+  education: string;
+  contact: {
+    email: string;
+    phone: string;
+    location: string;
+  };
+  summary: string;
+  similarity_score: number;
 }
 
 const TalentSearch = () => {
@@ -46,35 +56,34 @@ const TalentSearch = () => {
       setIsSearching(true);
       
       try {
-        const response = await fetch('http://localhost:8000/api/search/search/', {
+        const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.SEARCH), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            // Add cookie headers if needed - in production, cookies would typically be sent automatically
           },
           body: JSON.stringify({
             query: searchQuery,
             location: null,
             experience_years: null
           }),
-          credentials: 'include' // Include cookies in the request
+          credentials: 'include'
         });
         
         if (!response.ok) {
           throw new Error(`API returned ${response.status}: ${response.statusText}`);
         }
         
-        const data: SearchResponse = await response.json();
+        const data: SearchResponse[] = await response.json();
+        console.log(data);
         
         // Process and set the search results
-        const candidates = data.matches.map(candidate => ({
+        const candidates = data.map(candidate => ({
           ...candidate,
           // For backward compatibility with existing UI
           matchScore: Math.round(candidate.similarity_score * 100)
         }));
         
         setSearchResults(candidates);
-        setAnalysis(data.analysis);
         
       } catch (error) {
         console.error("Search API error:", error);

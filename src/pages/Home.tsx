@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, FileUp, Search, Users, BarChart3 } from "lucide-react";
+import { ArrowRight, FileUp, Search, Users, BarChart3, Linkedin } from "lucide-react";
 
 const Home = () => {
   return (
@@ -152,7 +152,7 @@ const Home = () => {
           </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8 max-w-3xl mx-auto">
+        <div className="grid md:grid-cols-4 gap-8 max-w-4xl mx-auto">
           <div className="text-center">
             <div className="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4"></div>
             <h3 className="font-semibold text-lg">Alex Johnson</h3>
@@ -167,6 +167,26 @@ const Home = () => {
             <div className="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4"></div>
             <h3 className="font-semibold text-lg">Michael Rodriguez</h3>
             <p className="text-gray-600">Head of Recruitment</p>
+          </div>
+          <div className="text-center">
+            <div className="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
+              <img 
+                src="/lovable-uploads/37caa63a-4961-491d-9aba-89174f39b622.png" 
+                alt="Chaitanya Pidugu" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <h3 className="font-semibold text-lg">Chaitanya Pidugu</h3>
+            <p className="text-gray-600">Lead Developer</p>
+            <a 
+              href="https://www.linkedin.com/in/chaitanyapidugu/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-blue-600 hover:text-blue-800 mt-2"
+            >
+              <Linkedin className="h-4 w-4 mr-1" />
+              LinkedIn
+            </a>
           </div>
         </div>
       </section>

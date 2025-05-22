@@ -1,7 +1,7 @@
 
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { UserButton } from "@clerk/clerk-react";
 
 const Navbar = () => {
   return (
@@ -13,44 +13,8 @@ const Navbar = () => {
           </div>
         </NavLink>
         
-        <nav className="hidden md:flex items-center gap-6">
-          <NavLink 
-            to="/upload" 
-            className={({ isActive }) => 
-              isActive ? "text-recruiter-primary font-medium" : "text-gray-600 hover:text-gray-900"
-            }
-          >
-            Upload Resumes
-          </NavLink>
-          <NavLink 
-            to="/search" 
-            className={({ isActive }) => 
-              isActive ? "text-recruiter-primary font-medium" : "text-gray-600 hover:text-gray-900"
-            }
-          >
-            Search Talent
-          </NavLink>
-          <NavLink 
-            to="/candidates" 
-            className={({ isActive }) => 
-              isActive ? "text-recruiter-primary font-medium" : "text-gray-600 hover:text-gray-900"
-            }
-          >
-            Candidates
-          </NavLink>
-          <NavLink 
-            to="/dashboard" 
-            className={({ isActive }) => 
-              isActive ? "text-recruiter-primary font-medium" : "text-gray-600 hover:text-gray-900"
-            }
-          >
-            Dashboard
-          </NavLink>
-        </nav>
-        
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">Sign In</Button>
-          <Button size="sm">Sign Up</Button>
+          <UserButton afterSignOutUrl="/" />
         </div>
       </div>
     </header>

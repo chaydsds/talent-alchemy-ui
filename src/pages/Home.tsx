@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FileUp, Search, Users, BarChart3 } from "lucide-react";
 
 const Home = () => {
   return (
@@ -17,15 +17,44 @@ const Home = () => {
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Harness the power of AI to transform your recruitment process. Upload resumes, find the perfect candidates, and contact them automatically.
             </p>
-            <div className="flex flex-wrap justify-center gap-4 pt-4">
-              <Button size="lg" asChild>
-                <Link to="/upload">Try Demo <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/search">Search Talent</Link>
-              </Button>
-            </div>
           </div>
+        </div>
+      </section>
+
+      {/* Navigation Cards Section */}
+      <section className="py-12 container mx-auto px-4 -mt-16">
+        <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <Link to="/upload" className="bg-white rounded-xl shadow-lg p-6 text-center transition-all hover:shadow-xl hover:-translate-y-1">
+            <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 mx-auto">
+              <FileUp className="h-6 w-6" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">Upload Resumes</h3>
+            <p className="text-gray-600 text-sm">Process and analyze candidate resumes</p>
+          </Link>
+          
+          <Link to="/search" className="bg-white rounded-xl shadow-lg p-6 text-center transition-all hover:shadow-xl hover:-translate-y-1">
+            <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 mb-4 mx-auto">
+              <Search className="h-6 w-6" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">Search Talent</h3>
+            <p className="text-gray-600 text-sm">Find candidates using semantic search</p>
+          </Link>
+          
+          <Link to="/candidates" className="bg-white rounded-xl shadow-lg p-6 text-center transition-all hover:shadow-xl hover:-translate-y-1">
+            <div className="h-12 w-12 bg-cyan-100 rounded-lg flex items-center justify-center text-cyan-600 mb-4 mx-auto">
+              <Users className="h-6 w-6" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">Candidates</h3>
+            <p className="text-gray-600 text-sm">Manage and review all candidates</p>
+          </Link>
+          
+          <Link to="/dashboard" className="bg-white rounded-xl shadow-lg p-6 text-center transition-all hover:shadow-xl hover:-translate-y-1">
+            <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center text-green-600 mb-4 mx-auto">
+              <BarChart3 className="h-6 w-6" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">Dashboard</h3>
+            <p className="text-gray-600 text-sm">View analytics and metrics</p>
+          </Link>
         </div>
       </section>
 

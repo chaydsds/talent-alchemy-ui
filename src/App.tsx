@@ -3,14 +3,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import Home from "./pages/Home";
-import Upload from "./pages/Upload";
-import TalentSearch from "./pages/Search";
-import CandidateDetail from "./pages/CandidateDetail";
-import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter } from "react-router-dom";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import AuthenticatedApp from "./components/auth/AuthenticatedApp";
+import UnauthenticatedApp from "./components/auth/UnauthenticatedApp";
 
 const queryClient = new QueryClient();
 
@@ -20,16 +16,12 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/upload" element={<Upload />} />
-            <Route path="/search" element={<TalentSearch />} />
-            <Route path="/candidates/:id" element={<CandidateDetail />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
+        <SignedIn>
+          <AuthenticatedApp />
+        </SignedIn>
+        <SignedOut>
+          <UnauthenticatedApp />
+        </SignedOut>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

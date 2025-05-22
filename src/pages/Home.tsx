@@ -106,6 +106,71 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Email Setup Callout Section */}
+      <section className="py-16 bg-gray-50 w-full">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Connect your email for outreach</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Configure your email provider to enable automated background checks and candidate outreach
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h3 className="text-2xl font-semibold mb-4">Automate your recruitment communications</h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-500 mt-0.5" />
+                    <span>Send personalized outreach emails from your professional email</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-500 mt-0.5" />
+                    <span>Verify candidate backgrounds with official reference checks</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-500 mt-0.5" />
+                    <span>Schedule interviews with calendar integration</span>
+                  </li>
+                </ul>
+                <div className="mt-6">
+                  <Button asChild>
+                    <Link to="/email-setup">Configure Email <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="bg-gray-100 p-6 rounded-lg">
+                <div className="border-b pb-3 mb-3 flex items-center gap-2">
+                  <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                    <Mail className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium">Email Configuration</h4>
+                    <p className="text-sm text-gray-500">Easy setup with major providers</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-2 px-3 bg-white rounded">
+                    <span className="font-medium">Gmail</span>
+                    <span className="text-green-600 text-sm">OAuth2 Compatible</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 px-3 bg-white rounded">
+                    <span className="font-medium">Outlook</span>
+                    <span className="text-green-600 text-sm">OAuth2 Compatible</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 px-3 bg-white rounded">
+                    <span className="font-medium">Custom SMTP/IMAP</span>
+                    <span className="text-blue-600 text-sm">Manual Setup</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Demo Video Section */}
       <section className="py-16 bg-gray-50 w-full">
         <div className="container mx-auto px-4">
@@ -143,7 +208,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* About Team Section (Optional) */}
+      {/* About Team Section */}
       <section className="py-16 container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Meet the team</h2>

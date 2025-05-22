@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { mockCandidates } from "@/lib/mock-data";
 import { Upload } from "lucide-react";
 import { getApiUrl, API_CONFIG } from "@/config/api";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Link } from "react-router-dom";
 
 interface CandidateResponse {
   name: string;
@@ -27,10 +29,15 @@ const UploadPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
+  const [showFreeTierDialog, setShowFreeTierDialog] = useState(false);
+  const [uploadCount, setUploadCount] = useState(0);
 
   // Fetch all parsed resumes when component mounts
   useEffect(() => {
     fetchParsedResumes();
+    // For demo purposes, we'll get the upload count from localStorage
+    const storedCount = localStorage.getItem('resumeUploadCount');
+    setUploadCount(storedCount ? parseInt(storedCount) : 0);
   }, []);
 
   // Function to fetch all parsed resumes from API
@@ -85,6 +92,12 @@ const UploadPage = () => {
     e.preventDefault();
     setIsDragging(false);
     
+    // Check if free tier limit is reached
+    if (uploadCount >= 3) {
+      setShowFreeTierDialog(true);
+      return;
+    }
+    
     const droppedFiles = Array.from(e.dataTransfer.files).filter(
       file => file.type === "application/pdf" || 
              file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -98,6 +111,12 @@ const UploadPage = () => {
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Check if free tier limit is reached
+    if (uploadCount >= 3) {
+      setShowFreeTierDialog(true);
+      return;
+    }
+    
     if (e.target.files && e.target.files.length > 0) {
       const selectedFiles = Array.from(e.target.files).filter(
         file => file.type === "application/pdf" || 
@@ -150,6 +169,12 @@ const UploadPage = () => {
       clearInterval(progressInterval);
       
       toast.success(`Successfully parsed: ${file.name}`);
+      
+      // Increment upload count
+      const newCount = uploadCount + 1;
+      setUploadCount(newCount);
+      localStorage.setItem('resumeUploadCount', newCount.toString());
+      
       return data;
     } catch (error) {
       console.error(`Error uploading ${file.name}:`, error);
@@ -159,6 +184,12 @@ const UploadPage = () => {
   };
   
   const handleFileUpload = async (filesToUpload: File[]) => {
+    // Check if free tier limit would be exceeded
+    if (uploadCount + filesToUpload.length > 3) {
+      setShowFreeTierDialog(true);
+      return;
+    }
+    
     setFiles(prevFiles => [...prevFiles, ...filesToUpload]);
     setIsUploading(true);
     
@@ -194,6 +225,12 @@ const UploadPage = () => {
   };
 
   const loadSampleResumes = () => {
+    // Check if free tier limit is reached
+    if (uploadCount >= 3) {
+      setShowFreeTierDialog(true);
+      return;
+    }
+    
     setIsUploading(true);
     
     // Simulate loading sample resumes
@@ -201,6 +238,11 @@ const UploadPage = () => {
       setIsUploading(false);
       setParsedCandidates(mockCandidates);
       toast.success("Sample resumes loaded successfully!");
+      
+      // Increment upload count for demo purposes
+      const newCount = uploadCount + 1;
+      setUploadCount(newCount);
+      localStorage.setItem('resumeUploadCount', newCount.toString());
     }, 1500);
   };
 
@@ -212,6 +254,9 @@ const UploadPage = () => {
           <p className="text-gray-600 text-lg">
             Upload candidate resumes in PDF or DOCX format for AI-powered parsing
           </p>
+          <div className="text-sm text-gray-500 mt-2">
+            Free tier: {3 - uploadCount} of 3 uploads remaining
+          </div>
         </div>
         
         <Card>
@@ -347,7 +392,7 @@ const UploadPage = () => {
 
                 <div className="mt-6 flex justify-end">
                   <Button asChild>
-                    <a href="/search">Continue to Search</a>
+                    <Link to="/email-setup">Configure Email for Outreach</Link>
                   </Button>
                 </div>
               </div>
@@ -361,6 +406,26 @@ const UploadPage = () => {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Free Tier Limit Dialog */}
+      <Dialog open={showFreeTierDialog} onOpenChange={setShowFreeTierDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Free Tier Limit Reached</DialogTitle>
+            <DialogDescription>
+              You've reached the limit of 3 resume uploads on the free tier. Upgrade to a premium plan to upload more resumes and access additional features.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-2">
+            <Button variant="outline" onClick={() => setShowFreeTierDialog(false)}>
+              Maybe Later
+            </Button>
+            <Button>
+              Upgrade Plan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import Upload from "@/pages/Upload";
 import TalentSearch from "@/pages/Search";
 import CandidateDetail from "@/pages/CandidateDetail";
 import Dashboard from "@/pages/Dashboard";
+import EmailSetup from "@/pages/EmailSetup";
 import NotFound from "@/pages/NotFound";
 
 const AuthenticatedApp = () => {
@@ -19,6 +20,7 @@ const AuthenticatedApp = () => {
         <Route path="/search" element={<TalentSearch />} />
         <Route path="/candidates/:id" element={<CandidateDetail />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/email-setup" element={<EmailSetup />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

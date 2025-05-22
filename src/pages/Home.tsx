@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, FileUp, Search, Users, BarChart3, Linkedin } from "lucide-react";
+import { ArrowRight, FileUp, Search, Users, BarChart3, Linkedin, Check, Mail } from "lucide-react";
 
 const Home = () => {
   return (

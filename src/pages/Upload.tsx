@@ -420,7 +420,10 @@ const UploadPage = () => {
             <Button variant="outline" onClick={() => setShowFreeTierDialog(false)}>
               Maybe Later
             </Button>
-            <Button>
+            <Button onClick={() => {
+              setShowFreeTierDialog(false);
+              window.location.href = "/payment";
+            }}>
               Upgrade Plan
             </Button>
           </DialogFooter>

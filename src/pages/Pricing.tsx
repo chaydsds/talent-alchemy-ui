@@ -4,9 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, MessageSquare } from 'lucide-react';
 import FeedbackDialog from '@/components/feedback/FeedbackDialog';
+import ContactPopup from '@/components/ContactPopup';
 
 const Pricing = () => {
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showContactPopup, setShowContactPopup] = useState(false);
+
+  const handlePlanClick = () => {
+    setShowContactPopup(true);
+  };
 
   const plans = [
     {
@@ -99,6 +105,7 @@ const Pricing = () => {
               <Button 
                 className="w-full" 
                 variant={plan.popular ? "default" : "outline"}
+                onClick={handlePlanClick}
               >
                 {plan.buttonText}
               </Button>
@@ -124,6 +131,11 @@ const Pricing = () => {
       <FeedbackDialog 
         open={showFeedback} 
         onOpenChange={setShowFeedback} 
+      />
+
+      <ContactPopup 
+        open={showContactPopup} 
+        onOpenChange={setShowContactPopup} 
       />
     </div>
   );

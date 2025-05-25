@@ -13,6 +13,15 @@ const Navbar = () => {
           </div>
         </NavLink>
         
+        <nav className="hidden md:flex items-center gap-6">
+          <NavLink 
+            to="/pricing" 
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Pricing
+          </NavLink>
+        </nav>
+        
         <div className="flex items-center gap-2">
           <UserButton afterSignOutUrl="/" />
         </div>

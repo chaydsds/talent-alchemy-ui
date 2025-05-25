@@ -9,6 +9,7 @@ import TalentSearch from "@/pages/Search";
 import CandidateDetail from "@/pages/CandidateDetail";
 import Dashboard from "@/pages/Dashboard";
 import EmailSetup from "@/pages/EmailSetup";
+import Pricing from "@/pages/Pricing";
 import NotFound from "@/pages/NotFound";
 
 const AuthenticatedApp = () => {
@@ -21,6 +22,7 @@ const AuthenticatedApp = () => {
         <Route path="/candidates/:id" element={<CandidateDetail />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/email-setup" element={<EmailSetup />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

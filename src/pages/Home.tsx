@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, FileUp, Search, Users, BarChart3, Linkedin, Check, Mail } from "lucide-react";
+import { ArrowRight, FileUp, Search, Users, BarChart3, Linkedin, Check, Mail, Shield } from "lucide-react";
 
 const Home = () => {
   return (
@@ -23,7 +23,7 @@ const Home = () => {
 
       {/* Navigation Cards Section */}
       <section className="py-12 container mx-auto px-4 -mt-16">
-        <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-5 gap-6 max-w-5xl mx-auto">
           <Link to="/upload" className="bg-white rounded-xl shadow-lg p-6 text-center transition-all hover:shadow-xl hover:-translate-y-1">
             <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 mx-auto">
               <FileUp className="h-6 w-6" />
@@ -46,6 +46,14 @@ const Home = () => {
             </div>
             <h3 className="font-semibold text-lg mb-2">Candidates</h3>
             <p className="text-gray-600 text-sm">Manage and review all candidates</p>
+          </Link>
+
+          <Link to="/background-checks" className="bg-white rounded-xl shadow-lg p-6 text-center transition-all hover:shadow-xl hover:-translate-y-1">
+            <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center text-red-600 mb-4 mx-auto">
+              <Shield className="h-6 w-6" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">Background Checks</h3>
+            <p className="text-gray-600 text-sm">Verify employee credentials</p>
           </Link>
           
           <Link to="/dashboard" className="bg-white rounded-xl shadow-lg p-6 text-center transition-all hover:shadow-xl hover:-translate-y-1">

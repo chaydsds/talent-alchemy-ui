@@ -10,6 +10,11 @@ import CandidateDetail from "@/pages/CandidateDetail";
 import Dashboard from "@/pages/Dashboard";
 import EmailSetup from "@/pages/EmailSetup";
 import Pricing from "@/pages/Pricing";
+import BackgroundChecks from "@/pages/BackgroundChecks";
+import EmployeeDetails from "@/pages/EmployeeDetails";
+import InitiateBackgroundCheck from "@/pages/InitiateBackgroundCheck";
+import EmailIntegration from "@/pages/EmailIntegration";
+import AdminPanel from "@/pages/AdminPanel";
 import NotFound from "@/pages/NotFound";
 
 const AuthenticatedApp = () => {
@@ -23,6 +28,11 @@ const AuthenticatedApp = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/email-setup" element={<EmailSetup />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/background-checks" element={<BackgroundChecks />} />
+        <Route path="/background-checks/employee/:id" element={<EmployeeDetails />} />
+        <Route path="/background-checks/initiate" element={<InitiateBackgroundCheck />} />
+        <Route path="/email-integration" element={<EmailIntegration />} />
+        <Route path="/admin-panel" element={<AdminPanel />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

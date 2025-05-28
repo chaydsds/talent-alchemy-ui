@@ -15,6 +15,12 @@ const Navbar = () => {
         
         <nav className="hidden md:flex items-center gap-6">
           <NavLink 
+            to="/background-checks" 
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Background Checks
+          </NavLink>
+          <NavLink 
             to="/pricing" 
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >

@@ -10,18 +10,27 @@ import UnauthenticatedApp from "./components/auth/UnauthenticatedApp";
 
 const queryClient = new QueryClient();
 
+// Temporary bypass for testing - set to true to skip authentication
+const BYPASS_AUTH_FOR_TESTING = true;
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <SignedIn>
+        {BYPASS_AUTH_FOR_TESTING ? (
           <AuthenticatedApp />
-        </SignedIn>
-        <SignedOut>
-          <UnauthenticatedApp />
-        </SignedOut>
+        ) : (
+          <>
+            <SignedIn>
+              <AuthenticatedApp />
+            </SignedIn>
+            <SignedOut>
+              <UnauthenticatedApp />
+            </SignedOut>
+          </>
+        )}
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

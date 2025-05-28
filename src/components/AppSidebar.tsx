@@ -23,7 +23,8 @@ import {
   Shield, 
   Mail, 
   DollarSign,
-  Settings
+  Settings,
+  UserPlus
 } from "lucide-react";
 
 const navigationItems = [
@@ -64,6 +65,14 @@ const backgroundCheckItems = [
     title: "Initiate Check",
     url: "/background-checks/initiate",
     icon: FileUp,
+  },
+];
+
+const employeeItems = [
+  {
+    title: "Employee Management",
+    url: "/employee-management",
+    icon: UserPlus,
   },
 ];
 
@@ -124,6 +133,24 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} className={getNavClass(item.url)}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Employee Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {employeeItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavClass(item.url)}>

@@ -15,6 +15,7 @@ import EmployeeDetails from "@/pages/EmployeeDetails";
 import InitiateBackgroundCheck from "@/pages/InitiateBackgroundCheck";
 import EmailIntegration from "@/pages/EmailIntegration";
 import AdminPanel from "@/pages/AdminPanel";
+import EmployeeManagement from "@/pages/EmployeeManagement";
 import NotFound from "@/pages/NotFound";
 
 const AuthenticatedApp = () => {
@@ -33,6 +34,7 @@ const AuthenticatedApp = () => {
         <Route path="/background-checks/initiate" element={<InitiateBackgroundCheck />} />
         <Route path="/email-integration" element={<EmailIntegration />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
+        <Route path="/employee-management" element={<EmployeeManagement />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>
